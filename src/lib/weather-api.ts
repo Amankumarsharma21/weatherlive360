@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 export type Units = "metric" | "imperial";
 
 export interface CurrentWeather {
@@ -44,16 +42,6 @@ export interface GeoResult {
   state?: string;
 }
 
-async function call<T>(params: Record<string, string>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke("weather", {
-    method: "GET",
-    // edge function reads URL params; supabase-js puts body in POST so we use a query string trick:
-  });
-  // The above invoke does not support GET params reliably; use direct fetch instead:
-  void data; void error;
-  throw new Error("unused");
-}
-// Direct fetch using Cloud env so we can pass query params cleanly.
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/weather`;
 const ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
@@ -74,6 +62,3 @@ export const weatherApi = {
   bundle: (lat: number, lon: number, units: Units = "metric") =>
     weatherFetch<WeatherBundle>({ lat: String(lat), lon: String(lon), units }),
 };
-
-// Suppress the unused helper
-void call;
